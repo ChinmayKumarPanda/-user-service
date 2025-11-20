@@ -1,0 +1,93 @@
+# --- Deployment replicas ---
+replicaCount: 1
+
+# --- Application Docker image ---
+image:
+  repository: 717153733557.dkr.ecr.ap-south-1.amazonaws.com/user-service
+  pullPolicy: IfNotPresent
+  tag: "v1"
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+# --- Pod labels / annotations ---
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+# --- Kubernetes Service ---
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+# --- Ingress (AWS ALB) ---
+ingress:
+  enabled: true
+  className: alb
+
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+
+  hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: Prefix
+
+  tls: []
+
+# ---- HTTPRoute (DISABLED) ----
+httpRoute:
+  enabled: false
+
+# --- Resources ---
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# --- Health checks ---
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 3000
+
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 3000
+
+# --- Autoscaling ---
+autoscaling:
+  enabled: false
+
+volumes: []
+volumeMounts: []
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# --- Enable Prometheus ServiceMonitor ---
+serviceMonitor:
+  enabled: true
+
